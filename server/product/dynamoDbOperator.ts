@@ -1,0 +1,323 @@
+import {
+    DeleteItemCommand,
+    ScanCommand,
+    QueryCommand,
+    UpdateItemCommand,
+    ReturnValue
+  } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocumentClient, PutCommand, ScanCommand as scanCommand } from "@aws-sdk/lib-dynamodb";
+import { getDynamoDBClient } from './dynamoDbClient';
+  import logger from '../logging';
+import { CartProductType } from '@/interFace/interFace';
+  
+  const DYNAMO_DB_TABLE_NAME = process.env.DYNAMO_DB_TABLE_NAME;
+  const DYNAMO_DB_TABLE_ORDERS_NAME = "orders";
+export const updateItemProductQuantity = async (_id: string, productQuantity: number) => {
+  const dynamoDBClient = await getDynamoDBClient();
+    const params = {
+      TableName: DYNAMO_DB_TABLE_NAME,
+      Key: {
+        "_id": { S: _id } // 假设id是一个字符串类型的主键
+      },
+      UpdateExpression: "set #numField = #numField - :val",
+      ExpressionAttributeNames: {
+        "#numField": "productQuantity" // 新的status值
+      },
+      ExpressionAttributeValues: {
+        ":val": { "N": productQuantity.toString() }
+      },
+      ReturnValues: "ALL_NEW" as ReturnValue // 返回更新后的值
+    };
+  
+    try {
+      const data = await dynamoDBClient.send(new UpdateItemCommand(params));
+      console.log("Updated success:", data);
+    } catch (error) {
+      console.error("Updated failure:", error);
+    }
+  }
+  export const writeToDynamoDb = async (
+    _id: string,
+    categoryName: string,
+    oldPrice: number,
+    price: number,
+    productDetails: string,
+    productImages: string[],
+    productName: string,
+    productQuantity: number,
+    subcategoryName: string,
+    img: string,
+    date: string,
+    offer: boolean,
+    offerPersent: number,
+    rettings: number[],
+    productStatus: string,
+    __v: number,
+  ) => {
+    const dynamoDBClient = await getDynamoDBClient();
+    const docClient = DynamoDBDocumentClient.from(dynamoDBClient);
+    const params = {
+      TableName: DYNAMO_DB_TABLE_NAME,
+      Item: {
+        _id: `${_id}`,
+        categoryName,
+        oldPrice,
+        price,
+        productDetails,
+        productImages,
+        productName,
+        productQuantity,
+        subcategoryName,
+        img,
+        date,
+        offer,
+        offerPersent,
+        rettings,
+        productStatus,
+        __v: {S: __v.toString()},
+      },
+    };
+    // console.log("params", params);
+    try {
+      await docClient.send(new PutCommand(params));
+      logger.info({ message: 'Successfully wrote to DynamoDB' }, 'info');
+    } catch (error) {
+      logger.error({ message: 'Error writing to DynamoDB', error }, 'error');
+      throw error;
+    }
+  };
+
+  export const writeToDynamoDbOrders = async (
+    buyerEmail: String,
+    name: String,
+    Address: String,
+    City: String,
+    Postcode: String,
+    State: String,
+    date: String,
+    orderStatusDate: String,
+    EmailAddress: String,
+    Phone: String,
+    totalPrice: Number,
+    orderProducts: Array<CartProductType>,
+    paymentId: String,
+    shipmentStatus: String,
+    orderId: String,
+  ) => {
+    const dynamoDBClient = await getDynamoDBClient();
+    const docClient = DynamoDBDocumentClient.from(dynamoDBClient);
+    const params = {
+      TableName: DYNAMO_DB_TABLE_ORDERS_NAME,
+      Item: {
+        buyerEmail,
+        name,
+        Address,
+        City,
+        Postcode,
+        State,
+        date,
+        orderStatusDate,
+        EmailAddress,
+        Phone,
+        totalPrice,
+        orderProducts,
+        paymentId,
+        shipmentStatus,
+        orderId,
+      },
+    };
+    // console.log("params", params);
+    try {
+      await docClient.send(new PutCommand(params));
+      logger.info({ message: 'Successfully wrote to DynamoDB' }, 'info');
+    } catch (error) {
+      logger.error({ message: 'Error writing to DynamoDB', error }, 'error');
+      throw error;
+    }
+  };
+  
+  export const deleteFromDynamoDb = async (
+    entityType: string,
+    entityId: string,
+    createdAt: string
+  ) => {
+    const dynamoDBClient = await getDynamoDBClient();
+    const params = {
+      TableName: DYNAMO_DB_TABLE_NAME,
+      Key: {
+        pk: { S: `${entityType}_${entityId}` },
+        createdAt: { S: createdAt },
+      },
+    };
+  
+    try {
+      await dynamoDBClient.send(new DeleteItemCommand(params));
+      logger.info({ message: 'Successfully deleted item from DynamoDB' }, 'info');
+    } catch (error) {
+      logger.error(
+        { message: 'Error deleting item from DynamoDB', error },
+        'error'
+      );
+      throw error;
+    }
+  };
+  
+  export const scanDynamoDBProduct = async (page?: number, limit?: number) => {
+    const dynamoDBClient = await getDynamoDBClient();
+    const docClient = DynamoDBDocumentClient.from(dynamoDBClient);
+    const params = {
+        TableName: DYNAMO_DB_TABLE_NAME,
+    };
+
+    try {
+        const data = await docClient.send(new ScanCommand(params));
+        // console.log("Scan succeeded:", data.Items, limit, page);
+        return mapToStandardFormat(data.Items, limit, page);
+    } catch (err) {
+        console.error("Unable to scan the table. Error:", JSON.stringify(err, null, 2));
+    }
+
+  }
+
+  export const queryDynamoDbSingleProductDetails = async () => {
+    
+  }
+  export const queryDynamoDbByEntityTypeID = async (
+    _id: string,
+  ) => {
+    const dynamoDBClient = await getDynamoDBClient();
+    const docClient = DynamoDBDocumentClient.from(dynamoDBClient);
+    const params = {
+      TableName: DYNAMO_DB_TABLE_NAME,
+      KeyConditionExpression: "#id = :value",
+        ExpressionAttributeNames: {
+            "#id": "_id" // 使用占位符#id来代替实际的键名_id
+        },
+        ExpressionAttributeValues: {
+            ":value": { S: _id.toString() }
+        }
+    };
+  
+    try {
+      const data = await docClient.send(new QueryCommand(params));
+      if (!data || !data.Items) {
+        logger.error({ message: 'No items found in the query.' }, 'error');
+        return [];
+      }
+      return mapToStandardFormat(data.Items);
+    } catch (error) {
+        console.log(error);
+      logger.error({ message: 'Error querying DynamoDB', error }, 'error');
+      throw error;
+    }
+  };
+  
+  export const queryDynamoDbByEntityType = async (productName: string) => {
+    const dynamoDBClient = await getDynamoDBClient();
+    const params = {
+      TableName: DYNAMO_DB_TABLE_NAME,
+      KeyConditionExpression: '_id = :_id',
+      ExpressionAttributeValues: {
+        ':prodcutName': { S: `${productName}` },
+      },
+    };
+  
+    try {
+      const data = await dynamoDBClient.send(new ScanCommand(params));
+      if (!data || !data.Items) {
+        logger.error({ message: 'No items found in the query.' }, 'error');
+        return [];
+      }
+      return mapToStandardFormat(data.Items);
+    } catch (error) {
+      logger.error({ message: 'Error querying DynamoDB', error }, 'error');
+      throw error;
+    }
+  };
+  
+  export const queryDynamoDBByFilteringProduct = async ( searchQuery: string | string[], page?: string, limit?: number) => {
+    try {
+      const skip = (parseInt(page || "0") - 1) * (limit ||0);
+      let keywordArray: string[] = [];
+      const dynamoDBClient = await getDynamoDBClient();
+      const docClient = DynamoDBDocumentClient.from(dynamoDBClient);
+
+      if (searchQuery && typeof searchQuery === "string") {
+        keywordArray = searchQuery.split(",");
+      } else if (Array.isArray(searchQuery)) {
+        keywordArray = searchQuery;
+      }
+
+      const allProducts: any[] = [];
+      for (let keyword of keywordArray) {
+        const fieldsToSearch = ["productName", "categoryName", "subCategoryName", "offerPersent", "productStatus"];
+        for (let field of fieldsToSearch) {
+          const idField = ':' + field;
+          const queries = new scanCommand({
+            TableName: DYNAMO_DB_TABLE_NAME,
+            FilterExpression: `${field} = ${idField}`,
+            ExpressionAttributeValues: {
+              [idField]: keyword,
+            },
+            Limit: limit,
+          });
+          const result = await docClient.send(queries);
+          allProducts.push(...result.Items || []);
+        }
+      }
+      return { 
+        products: filterElementByAttributes(allProducts, "_id").slice(skip, skip +(limit || 12)),
+        totalPages: Math.ceil(allProducts.length/(limit || 12)),
+        currentPage: page || 1,
+      };
+    } catch (error) {
+      logger.error({ message: 'Error querying DynamoDB', error }, 'error');
+      throw error;
+    }
+  }
+
+  const mapToStandardFormat = (items?: any[], parsedLimit?: number, parsedPage?: number) => {
+    if (!items) {
+        return []
+    }
+
+    const skip = ((parsedPage || 1) - 1) * (parsedLimit || 12);
+    return { products: items.slice(skip, skip +(parsedLimit || 12)).map(item => {
+        return {
+            _id: item._id.S,
+            categoryName: item.categoryName.S,
+            oldPrice: item.oldPrice.N,
+            price: item.price.N,
+            productDetails: item.productDetails.S,
+            productImages: item.productImages.L.map((item: any) => item.S),
+            productName: item.productName.S,
+            productQuantity: item.productQuantity.N,
+            subcategoryName: item.subcategoryName.S,
+            img: item.img.S,
+            date: item.date.S,
+            offer: item.offer.BOOL,
+            offerPersent: item.offerPersent.N,
+            rettings: item.rettings.L.map((item: any) => parseFloat(item.N)),
+            productStatus: item.productStatus.S,
+            __v: item.__v.M,
+        };
+        }),
+        totalPages: Math.ceil(items.length/(parsedLimit || 12)),
+        currentPage: parsedPage || 1,
+    }
+  };
+
+  const filterElementByAttributes = (array: object[], attribute: string) => {
+    const seenAttr = new Map();
+    const uniqueArray = array.filter((item: any) => {
+      const attributeValue = item[attribute];
+      if (seenAttr.get(attributeValue)) {
+        return false;
+      } else {
+        seenAttr.set(attributeValue, true);
+        return true;
+      }
+    })
+    return uniqueArray;
+  }
+  
