@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { useDispatch } from "react-redux";
 import { clear_cart_after_payment } from "@/redux/slices/cartSlice";
+import {v4 as uuidv4 } from 'uuid';
 interface FormData {
   Fname: string;
   Lname: string;
@@ -79,40 +80,7 @@ const CheckOutMain = () => {
     const EmailAddress = data.EmailAddress;
     const Phone = data.Phone;
     const State = data.State;
-    // const card = elements.getElement(CardElement);
-    // if (card === null) {
-    //   return;
-    // }
-    // const { error, paymentMethod } = await stripe.createPaymentMethod({
-    //   type: "card",
-    //   card,
-    // });
-    // if (error) {
-    //   setcardError(error.message);
-    // } else {
-    //   setcardError("");
-    // }
-    // confirm payment
     setProcessing(true);
-    // const { paymentIntent, error: confirmError } =
-    //   await stripe.confirmCardPayment(clientSecret, {
-    //     payment_method: {
-    //       card: card,
-    //       billing_details: {
-    //         name: user?.name || "No Name",
-    //         email: user?.email || "No Name",
-    //       },
-    //     },
-    //   });
-
-    // if (confirmError) {
-    //   setcardError(confirmError.message);
-    // }
-    // save payment info in database
-    // if (paymentIntent?.status === "succeeded") {
-      // const paymentId = paymentIntent.id;
-      // setTransactionId(paymentId);
-
       const sellProductInfo = {
         buyerEmail: EmailAddress,
         name: Fname,
@@ -128,6 +96,7 @@ const CheckOutMain = () => {
         paymentId:"12312321",
         shipmentStatus: "pending",
         shipmentStatusArray: [],
+        orderId: uuidv4()
       };
 
       axios
@@ -272,6 +241,27 @@ const CheckOutMain = () => {
                     <div className="col-md-12">
                       <div className="checkout-form-list">
                         <label>
+                          State <span className="required">*</span>
+                        </label>
+                        <select
+                          {...register("State", {
+                            required: "State is required",
+                          })}
+                        >
+                          {stateList.map((item, index) => {
+                            return <option key={item + index}>{item}</option>
+                          })}
+                        </select>
+                        {errors.Postcode && (
+                          <span className="error-message">
+                            {errors.Postcode.message}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="col-md-12">
+                      <div className="checkout-form-list">
+                        <label>
                           Email Address <span className="required">*</span>
                         </label>
                         <input
@@ -294,7 +284,7 @@ const CheckOutMain = () => {
                     <div className="col-md-12">
                       <div className="checkout-form-list">
                         <label>
-                          Phone <span className="required">*</span>
+                          Phone <span className="required" color="red">*</span>
                         </label>
                         <input
                           type="text"
@@ -373,7 +363,8 @@ const CheckOutMain = () => {
                           <button
                             type="submit"
                             className={
-                              user?.email ? "bd-fill__btn" : "custome_disable"
+                              ( processing ||
+                              !cartProducts) ? "custome_disable" : "bd-fill__btn"
                             }
                             disabled={
                               processing ||
