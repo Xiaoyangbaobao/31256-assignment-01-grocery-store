@@ -8,6 +8,7 @@ Backend technique: NodeJS
 Database: DynamoDB
 Deployment: Vercels
 Easy Test product name: Red Onion Large Size, Kach Kogozi Labu, shoping basket
+Website Address: https://31256-assignment-01-grocery-store-82fm-1rb2r8qwc.vercel.app/
 
 ## Getting Started
 

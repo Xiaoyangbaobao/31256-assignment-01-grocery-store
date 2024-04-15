@@ -169,7 +169,7 @@ export const updateItemProductQuantity = async (_id: string, productQuantity: nu
 
     try {
         const data = await docClient.send(new ScanCommand(params));
-        // console.log("Scan succeeded:", data.Items, limit, page);
+        console.log("Scan succeeded:", data.Items, limit, page);
         return mapToStandardFormat(data.Items, limit, page);
     } catch (err) {
         console.error("Unable to scan the table. Error:", JSON.stringify(err, null, 2));
