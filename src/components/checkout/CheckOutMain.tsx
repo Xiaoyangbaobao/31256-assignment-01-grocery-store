@@ -114,13 +114,8 @@ const CheckOutMain = () => {
             });
         })
         .catch((error) => {
-          if (error.response.status === 403) {
-            console.error("Unauthorized access");
-            setPaymentSuccess(false);
-          } else {
-            console.error("Unauthorized access");
-            setPaymentSuccess(false);
-          }
+          toast.error(`Input error: ${error.message}`);
+          setPaymentSuccess(false);
         }).finally(() => {
           setProcessing(false);
         })

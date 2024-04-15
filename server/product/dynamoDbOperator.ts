@@ -5,7 +5,7 @@ import {
     UpdateItemCommand,
     ReturnValue
   } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, PutCommand, ScanCommand as scanCommand } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
 import { getDynamoDBClient } from './dynamoDbClient';
   import logger from '../logging';
 import { CartProductType } from '@/interFace/interFace';
@@ -31,7 +31,6 @@ export const updateItemProductQuantity = async (_id: string, productQuantity: nu
   
     try {
       const data = await dynamoDBClient.send(new UpdateItemCommand(params));
-      console.log("Updated success:", data);
     } catch (error) {
       console.error("Updated failure:", error);
     }
@@ -77,7 +76,6 @@ export const updateItemProductQuantity = async (_id: string, productQuantity: nu
         __v: {S: __v.toString()},
       },
     };
-    // console.log("params", params);
     try {
       await docClient.send(new PutCommand(params));
       logger.info({ message: 'Successfully wrote to DynamoDB' }, 'info');
@@ -235,50 +233,31 @@ export const updateItemProductQuantity = async (_id: string, productQuantity: nu
     }
   };
   
-  export const queryDynamoDBByFilteringProduct = async ( searchQuery: string | string[], page?: string, limit?: number) => {
+  export const queryDynamoDBByFilteringProduct = async ( searchQuery: string, page?: string, limit?: number) => {
+    const dynamoDBClient = await getDynamoDBClient();
+    const docClient = DynamoDBDocumentClient.from(dynamoDBClient);
+    const params = {
+        TableName: DYNAMO_DB_TABLE_NAME,
+    };
+
     try {
-      const skip = (parseInt(page || "0") - 1) * (limit ||0);
-      let keywordArray: string[] = [];
-      const dynamoDBClient = await getDynamoDBClient();
-      const docClient = DynamoDBDocumentClient.from(dynamoDBClient);
-
-      if (searchQuery && typeof searchQuery === "string") {
-        keywordArray = searchQuery.split(",");
-      } else if (Array.isArray(searchQuery)) {
-        keywordArray = searchQuery;
-      }
-
-      const allProducts: any[] = [];
-      for (let keyword of keywordArray) {
-        const fieldsToSearch = ["productName", "categoryName", "subCategoryName", "offerPersent", "productStatus"];
-        for (let field of fieldsToSearch) {
-          const idField = ':' + field;
-          const queries = new scanCommand({
-            TableName: DYNAMO_DB_TABLE_NAME,
-            FilterExpression: `${field} = ${idField}`,
-            ExpressionAttributeValues: {
-              [idField]: keyword,
-            },
-            Limit: limit,
-          });
-          const result = await docClient.send(queries);
-          allProducts.push(...result.Items || []);
-        }
-      }
-      return { 
-        products: filterElementByAttributes(allProducts, "_id").slice(skip, skip +(limit || 12)),
-        totalPages: Math.ceil(allProducts.length/(limit || 12)),
-        currentPage: page || 1,
-      };
-    } catch (error) {
-      logger.error({ message: 'Error querying DynamoDB', error }, 'error');
-      throw error;
+        const data = await docClient.send(new ScanCommand(params));
+        const items = mapToStandardFormat(data.Items, limit, parseInt(page || '0'));
+        const results = items.products.filter(item => 
+          item.categoryName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.productName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.subcategoryName.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      return {products: results, totalPages: items.totalPages, currentPage: items.currentPage};
+    } catch (err) {
+        console.error("Unable to scan the table. Error:", JSON.stringify(err, null, 2));
     }
+
   }
 
   const mapToStandardFormat = (items?: any[], parsedLimit?: number, parsedPage?: number) => {
     if (!items) {
-        return []
+        return { products: []}
     }
 
     const skip = ((parsedPage || 1) - 1) * (parsedLimit || 12);

@@ -9,10 +9,9 @@ import axios from "axios";
 import GridViewProduct from "./GridViewProduct";
 import ListViewProduct from "./ListViewProduct";
 import useGlobalContext from "@/hooks/use-context";
-import ShopSidebarRetting from "./ShopSidebarRetting";
 import ProductModal from "./ProductModal";
-import NiceSelect from "../common/NiceSelect";
 import PaginationTwo from "../elements/product/PaginationTwo";
+import ShopPreloader from "@/preloaders/ShopPreloader";
 // import Sudoku from "./SudoKu";
 const ShopSection = () => {
   const {
@@ -25,42 +24,34 @@ const ShopSection = () => {
     limit,
     page,
     setPage,
+    prodcutLoadding,
     setProdcutLoadding,
   } = useGlobalContext();
   const [searchValue, setSearchValue] = useState("");
-  const [apiEndPoint, setapiEndPoint] = useState<string>("");
 
-  const menuData = [
-    {
-      id: 1,
-      text: "New Arrival",
-      api: "new-arrival",
-    },
-    {
-      id: 2,
-      text: "Best Sale",
-      api: "best-selling-products",
-    },
-    {
-      id: 3,
-      text: "Trending",
-      api: "trending-products",
-    },
-    {
-      id: 4,
-      text: "Offers",
-      api: "offer-products",
-    },
-  ];
+  const handleSearchInputChange = (e:any) => {
+    setSearchValue(e.target.value);
+  }
+
+  const handleInputKeyDown = (e: any) => {
+    if (e.keyCode === 13) {
+      e.preventDefault();
+      handleInputChange(e);
+    }
+  }
 
   const handleInputChange = (e: any) => {
+    e.preventDefault();
     setProdcutLoadding(true);
-    setSearchValue(e.target.value);
+    const url = '/api/shop';
 
-    axios
-      .get(
-        `${process.env.BASE_URL}product/search-products?search=${searchValue}&page=${page}&limit=${limit}`
-      )
+    axios.get(url, {
+      params: {
+        page,
+        limit,
+        search: searchValue
+      }
+    })
       .then((res) => {
         setProducts(res.data.products);
         setotalPages(res.data.totalPages);
@@ -521,8 +512,6 @@ const ShopSection = () => {
   //   fetchData();
   // }, []);
 
-  const selectHandler = () => {};
-
   return (
     <>
       <section className="bd-shop__area pt-55 pb-85">
@@ -537,23 +526,26 @@ const ShopSection = () => {
             </div>
             <div className="col-xxl-9 col-xl-8 col-lg-8">
               <div className="row">
-                <div className="col-xl-4">
+                <div className="col-xl-6">
                   <div className="bd-top__filter-search p-relative mb-30">
                     <form className="bd-top__filter-input" action="#">
                       <input
                         type="text"
                         placeholder="Search keyword..."
                         value={searchValue}
-                        onChange={handleInputChange}
+                        onKeyDown={handleInputKeyDown}
+                        onChange={handleSearchInputChange}
                       />
                       <button>
-                        <i className="fa-regular fa-magnifying-glass"></i>
+                        <i className="fa-regular fa-magnifying-glass" onClick={handleInputChange}></i>
                       </button>
                     </form>
                   </div>
                 </div>
-                <div className="col-xl-8">
-                  <div className="bd-filter__tab-inner mb-30">
+                <div className="col-xl-6" >
+                  <div className="bd-filter__tab-inner mb-30" style={{
+                        height: '60px'
+                      }}>
                     <div className="bd-top__filter">
                       <div className="bd-Product__tab pl-5">
                         <ul className="nav nav-tabs" id="myTab" role="tablist">
@@ -588,20 +580,10 @@ const ShopSection = () => {
                         </ul>
                       </div>
                     </div>
-                    <div className="bd-sort__type-filter">
-                      <NiceSelect
-                        options={menuData}
-                        defaultCurrent={0}
-                        onChange={selectHandler}
-                        name="sorting-list"
-                        setapiEndPoint={setapiEndPoint}
-                        className="sorting-list"
-                      />
-                    </div>
                   </div>
                 </div>
               </div>
-              <div className="row">
+              {!prodcutLoadding ?  <div className="row">
                 <div className="col-xl-12">
                   <div className="bd-shop__wrapper">
                     <div className="tab-content" id="myTabContent">
@@ -638,7 +620,7 @@ const ShopSection = () => {
                     </div>
                   </div>
                 </div>
-              </div> 
+              </div> : <ShopPreloader end={7} />}
 
               {products?.length >= limit ? (
                 <div className="row justify-content-center">
@@ -669,7 +651,6 @@ const ShopSection = () => {
           </div>
         </div>
       </section>
-      {/* <Sudoku /> */}
       <ProductModal />
     </>
   );

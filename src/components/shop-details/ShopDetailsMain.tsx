@@ -14,10 +14,10 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { wishlist_product } from "@/redux/slices/wishlistSlice";
 import { toast } from "react-toastify";
+import useGlobalContext from "@/hooks/use-context";
 const ShopDetailsMain = ({ id }: any) => {
   const dispatch = useDispatch();
   const [thumbsSwiper, setThumbsSwiper] = useState<any>(null);
-  const [newReview, setnewReview] = useState<boolean>(false);
   const [product, setProduct] = useState<CartProductType[]>([]);
   const [retting, setRetting] = useState<any>({});
   const [myProduct, setMyProduct] = useState<CartProductType>();
@@ -29,12 +29,13 @@ const ShopDetailsMain = ({ id }: any) => {
         _id: id,
       }
     }).then((res) => {
+
         setRetting(res.data.rettingsData);
         setProduct(res.data.products);
         setMyProduct(res.data.products[0]);
       })
       .catch((e) => console.log(e));
-  }, [id, setnewReview, newReview, setRetting]);
+  }, [id, setRetting]);
 
   const handleAddToCart = (product?: CartProductType) => {
     if (!product) return;
@@ -151,29 +152,6 @@ const ShopDetailsMain = ({ id }: any) => {
                   </div>
                   <div className="col-md-6">
                     <div className="modal-product-info shop-details-info">
-                      <div className="product-ratting">
-                        <ul>
-                          <li>
-                            <a href="#">
-                              {/* <GetRatting
-                                averageRating={retting.averageRating}
-                              /> */}
-                            </a>
-                          </li>
-
-                          {/* <li className="review-total">
-                            {" "}
-                            <a href="#">
-                              {" "}
-                              ({" "}
-                              {`${retting.rettings} ${
-                                retting.rettings <= 1 ? "Rating" : "Ratings"
-                              }`}{" "}
-                              )
-                            </a>
-                          </li> */}
-                        </ul>
-                      </div>
                       <h3>{myProduct?.productName}</h3>
                       <div className="product-price">
                         <span>${myProduct?.price}.00</span>

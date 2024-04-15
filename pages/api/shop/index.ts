@@ -45,7 +45,7 @@ export default async function handler(
         subcategoryName,
         img,
         date,
-        offer,
+        offer,  
         offerPersent,
         rettings,
         productStatus,
@@ -72,7 +72,7 @@ export default async function handler(
 
       } else if (search) {
         try {
-          const data = await queryDynamoDBByFilteringProduct(search, (page as string), parseInt((limit as string)));
+          const data = await queryDynamoDBByFilteringProduct(search as string, (page as string), parseInt((limit as string)));
           res.status(200).json(data);
         } catch (error) {
           console.log("searcherror", error);

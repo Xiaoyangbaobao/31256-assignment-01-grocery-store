@@ -7,6 +7,7 @@ Frontend technique: React, Typescript
 Backend technique: NodeJS
 Database: DynamoDB
 Deployment: Vercels
+Easy Test product name: Red Onion Large Size, Kach Kogozi Labu, shoping basket
 
 ## Getting Started
 

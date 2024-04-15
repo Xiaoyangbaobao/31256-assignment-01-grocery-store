@@ -24,7 +24,7 @@ const ShopSidebarCategories = () => {
 
   useEffect(() => {
     if (searchValue) {
-
+        setLoading(true);
         const url = '/api/shop';
         axios.get(url, {
           params: {
@@ -33,11 +33,11 @@ const ShopSidebarCategories = () => {
             search: searchValue
           }
         }).then((res) => {
-          console.log('res', res);
           setProducts(res.data.products);
           setotalPages(res.data.totalPages);
           setcurrentPage(res.data.currentPage);
           setPage(1);
+          setLoading(false);
           setSearchValue("");
         }) .catch((e) => console.log(e));
     }

@@ -30,14 +30,6 @@ const ListViewProduct = ({ products, limit }: any) => {
       {products?.length ? (
         <>
           {products.slice(0, limit).map((item: any, index: number) => {
-            const sum = item?.rettings?.reduce(
-              (acc: number, currentValue: number) => acc + currentValue,
-              0
-            );
-
-            const rettingsLength = item?.rettings?.length;
-            const rowRetting = rettingsLength > 0 ? sum / rettingsLength : 0;
-            const averageRating = parseFloat(rowRetting.toFixed(1));
             return (
               <div className="bd-grid__singel-item mb-30" key={index}>
                 <div className="row align-items-center">
@@ -88,9 +80,6 @@ const ListViewProduct = ({ products, limit }: any) => {
                               ${item?.price.toFixed(2)}
                             </span>
                           )}
-                        </div>
-                        <div className="bd-product__icon">
-                          <GetRatting averageRating={averageRating} />
                         </div>
                       </div>
                       <p className="mb-25">
