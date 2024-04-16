@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.180.0",
-    "@aws-sdk/credential-providers": "^3.188.0",
+    "@aws-sdk/credential-providers": "^3.554.0",
     "@aws-sdk/lib-dynamodb": "^3.529.1",
     "@aws-sdk/types": "^3.188.0",
     "@popperjs/core": "^2.11.8",
@@ -24,6 +24,7 @@
     "@types/react-dom": "18.2.5",
     "@types/react-redux": "^7.1.25",
     "@types/redux-persist": "^4.3.1",
+    "aws-sdk": "^2.1599.0",
     "axios": "^1.4.0",
     "bootstrap": "5.2.2",
     "emailjs-com": "^3.2.0",

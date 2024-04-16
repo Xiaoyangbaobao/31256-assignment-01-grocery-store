@@ -62,8 +62,7 @@ export default async function handler(
       if (!_id && !productName && !search) {
         try {
           const data = await scanDynamoDBProduct(parseInt(page as string), parseInt(limit as string));
-          // console.log('data', data)
-          res.status(200).json(data);
+          res.status(200).setHeader('Cache-Control', 'no-cache').json(data);
         } catch (error) {
           console.log(error);
           logger.error({ message: 'Error querying DynamoDB', error }, 'error');
