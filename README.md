@@ -13,6 +13,7 @@ Website Address: https://31256-assignment-01-grocery-store-82fm-1rb2r8qwc.vercel
 ## Getting Started
 
 First, run the development server:
+Please copy content of #env_template.txt to .env files.
 
 ```bash
 npm run dev
