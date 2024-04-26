@@ -77,10 +77,6 @@ export interface AppContextType {
   setUpdate: React.Dispatch<React.SetStateAction<boolean>>;
   myproducts: ProductType[];
   setMyProducts: React.Dispatch<React.SetStateAction<ProductType[] | []>>;
-  blog: blogDataType[];
-  setBlog: React.Dispatch<React.SetStateAction<blogDataType[] | []>>;
-  teamList: TeamMember[];
-  setTeamList: React.Dispatch<React.SetStateAction<TeamMember[] | []>>;
   Paymentproducts: SellProductInfoType[];
   setPaymentProducts: React.Dispatch<
     React.SetStateAction<SellProductInfoType[] | []>
