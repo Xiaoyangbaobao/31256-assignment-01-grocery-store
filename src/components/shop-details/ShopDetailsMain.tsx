@@ -14,7 +14,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { wishlist_product } from "@/redux/slices/wishlistSlice";
 import { toast } from "react-toastify";
-import useGlobalContext from "@/hooks/use-context";
+
 const ShopDetailsMain = ({ id }: any) => {
   const dispatch = useDispatch();
   const [thumbsSwiper, setThumbsSwiper] = useState<any>(null);

@@ -42,7 +42,7 @@ const CheckOutMain = () => {
     0
   );
   const handleGoToShopPage = () => {
-    router.push("/shop");
+    router.push("/");
   };
 
   const {
@@ -85,7 +85,7 @@ const CheckOutMain = () => {
           header
         )
         .then((res) => {
-            router.push("/shop");
+            router.push("/");
             dispatch(clear_cart_after_payment());
             setPaymentSuccess(true);
             toast.success(`Payment Success, an email has sent to ${EmailAddress}`, {
