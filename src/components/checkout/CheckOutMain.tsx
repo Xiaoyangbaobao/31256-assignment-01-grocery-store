@@ -42,29 +42,8 @@ const CheckOutMain = () => {
     0
   );
   const handleGoToShopPage = () => {
-    router.push("/shop");
+    router.push("/");
   };
-
-  // useEffect(() => {
-  //   if (user?.email) {
-  //     axios
-  //       .post(
-  //         `${process.env.BASE_URL}payment/payment-intent?email=${user?.email}`,
-  //         { totalPrice },
-  //         header
-  //       )
-  //       .then((res) => {
-  //         setclientSecret(res.data.clientSecret);
-  //       })
-  //       .catch((error) => {
-  //         if (error.response.status === 403) {
-  //           console.error("Unauthorized access");
-  //         } else {
-  //           console.error("Unauthorized access");
-  //         }
-  //       });
-  //   }
-  // }, [user?.email, totalPrice, header]);
 
   const {
     register,
@@ -106,7 +85,7 @@ const CheckOutMain = () => {
           header
         )
         .then((res) => {
-            router.push("/shop");
+            router.push("/");
             dispatch(clear_cart_after_payment());
             setPaymentSuccess(true);
             toast.success(`Payment Success, an email has sent to ${EmailAddress}`, {
